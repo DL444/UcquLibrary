@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DL444.UcquLibrary.Models;
+using System.Collections.Generic;
 
 namespace LibraryTest
 {
@@ -321,6 +322,68 @@ namespace LibraryTest
             score.Reverse();
             Assert.AreSame(term1, score.Terms[0]);
             Assert.AreSame(term2, score.Terms[1]);
+        }
+    }
+
+    [TestClass]
+    public class Test_Schedule
+    {
+        [TestMethod]
+        public void Test_Schedule_All()
+        {
+            List<ScheduleEntry> entries = new List<ScheduleEntry>()
+            {
+                new ScheduleEntry() { DayOfWeek = 1, StartSlot = 2, EndSlot = 4 },
+                new ScheduleEntry() { DayOfWeek = 2, StartSlot = 1, EndSlot = 2 },
+                new ScheduleEntry() { DayOfWeek = 2, StartSlot = 3, EndSlot = 4 },
+                new ScheduleEntry() { DayOfWeek = 2, StartSlot = 5, EndSlot = 6 },
+                new ScheduleEntry() { DayOfWeek = 3, StartSlot = 1, EndSlot = 4 },
+                new ScheduleEntry() { DayOfWeek = 4, StartSlot = 2, EndSlot = 3 },
+                new ScheduleEntry() { DayOfWeek = 5, StartSlot = 1, EndSlot = 2 },
+                new ScheduleEntry() { DayOfWeek = 5, StartSlot = 7, EndSlot = 9 },
+            };
+
+            ScheduleWeek week3 = new ScheduleWeek()
+            {
+                WeekNumber = 3,
+                Entries = entries
+            };
+            ScheduleWeek week5 = new ScheduleWeek()
+            {
+                WeekNumber = 5,
+                Entries = entries
+            };
+            ScheduleWeek week1 = new ScheduleWeek()
+            {
+                WeekNumber = 1,
+                Entries = entries
+            };
+
+
+            Schedule schedule = new Schedule();
+
+            schedule.AddWeek(week3);
+            Assert.AreEqual(3, schedule.Count);
+            Assert.AreEqual(2, schedule.Weeks[1].WeekNumber);
+
+            schedule.AddWeek(week5);
+            Assert.AreEqual(5, schedule.Count);
+            Assert.AreEqual(4, schedule.Weeks[3].WeekNumber);
+
+            schedule.AddWeek(week1);
+            Assert.AreEqual(5, schedule.Count);
+            Assert.AreEqual(4, schedule.Weeks[3].WeekNumber);
+            Assert.AreEqual(8, schedule.Weeks[0].Count);
+            Assert.AreEqual(8, schedule.Weeks[4].Count);
+            Assert.AreEqual(0, schedule.Weeks[1].Count);
+
+            Assert.AreEqual(1, schedule.GetDaySchedule(2).Count);
+            Assert.AreEqual(3, schedule.GetDaySchedule(1).Count);
+            Assert.AreEqual(1, schedule.GetDaySchedule(0).Count);
+            Assert.AreEqual(0, schedule.GetDaySchedule(5).Count);
+            Assert.AreEqual(3, schedule.GetDaySchedule(15).Count);
+            Assert.AreEqual(0, schedule.GetDaySchedule(120).Count);
+            Assert.AreEqual(0, schedule.GetDaySchedule(-20).Count);
         }
     }
 }
