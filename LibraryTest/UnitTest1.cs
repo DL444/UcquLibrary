@@ -384,6 +384,12 @@ namespace LibraryTest
             Assert.AreEqual(3, schedule.GetDaySchedule(15).Count);
             Assert.AreEqual(0, schedule.GetDaySchedule(120).Count);
             Assert.AreEqual(0, schedule.GetDaySchedule(-20).Count);
+
+            schedule.AddWeek(week5);
+            Assert.AreEqual(5, schedule.Count);
+            Assert.AreEqual(16, schedule.Weeks[4].Count);
+            schedule.AddEntry(5, week5.Entries[0]);
+            Assert.AreEqual(17, schedule.Weeks[4].Count);
         }
     }
 }

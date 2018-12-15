@@ -18,7 +18,11 @@ namespace DL444.UcquLibrary.Models
                     Weeks.Add(new ScheduleWeek() { WeekNumber = originalCount + i + 1 });
                 }
             }
-            Weeks[week.WeekNumber - 1] = week;
+            Weeks[week.WeekNumber - 1].Merge(week);
+        }
+        public void AddEntry(int week, ScheduleEntry entry)
+        {
+            AddWeek(new ScheduleWeek() { WeekNumber = week, Entries = new List<ScheduleEntry>() { entry } });
         }
         public IList<ScheduleEntry> GetDaySchedule(int day)
         {
@@ -27,7 +31,6 @@ namespace DL444.UcquLibrary.Models
             int dayOfWeek = day % 7 + 1;
             if (week > Count || week < 1) { return new List<ScheduleEntry>(); }
             entries = (from e in (from w in Weeks where w.WeekNumber == week select w.Entries).First() where e.DayOfWeek == dayOfWeek select e).ToList();
-            //entries = new List<ScheduleEntry>(this[week.ToString()].FindAll(x => x.DayOfWeek == dayOfWeek));
             return entries;
         }
 
@@ -39,6 +42,14 @@ namespace DL444.UcquLibrary.Models
 
         public List<ScheduleEntry> Entries { get; set; } = new List<ScheduleEntry>();
         public int Count => Entries.Count;
+
+        public void Merge(ScheduleWeek week)
+        {
+            if(this.WeekNumber == week.WeekNumber)
+            {
+                this.Entries.AddRange(week.Entries);
+            }
+        }
 
         public int CompareTo(ScheduleWeek other)
         {
