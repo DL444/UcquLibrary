@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DL444.UcquLibrary.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LibraryTest
 {
@@ -103,6 +104,15 @@ namespace LibraryTest
             Assert.AreEqual(0, course.GPA);
             Assert.AreEqual("", course.ToString());
         }
+
+        [TestMethod]
+        public void Test_EqualOperator_Null()
+        {
+            Assert.AreEqual(false, new Course() == null);
+            Assert.AreEqual(false, null == new Course());
+            Assert.AreEqual(true, new Course() != null);
+            Assert.AreEqual(true, null != new Course());
+        }
     }
 
     [TestClass]
@@ -165,6 +175,76 @@ namespace LibraryTest
             Assert.AreEqual("2019-2020学年第三学期", term.ToString());
             term = new Term(2019, 10);
             Assert.AreEqual("2019-2020学年第零学期", term.ToString());
+        }
+
+        [TestMethod]
+        public void Test_EqualOperator_Null()
+        {
+            Assert.AreEqual(false, new Term() == null);
+            Assert.AreEqual(false, null == new Term());
+            Assert.AreEqual(true, new Term() != null);
+            Assert.AreEqual(true, null != new Term());
+        }
+
+        [TestMethod]
+        public void Test_Diff()
+        {
+            Course course3Retake1 = new Course("Course3", 3, "Test Category", true, 72, true, "补考", "Lecturer", System.DateTime.Today);
+            Course course3Retake2 = new Course("Course3", 3, "Test Category", true, 73, true, "补考", "Lecturer", System.DateTime.Today);
+            Course course4 = new Course("Course4", 4, "Test Category", true, 67, true, "", "Lecturer", System.DateTime.Today);
+            Course course5 = new Course("Course5", 5, "Test Category", true, 67, true, "", "Lecturer", System.DateTime.Today);
+
+            Course[] courses1 = new Course[]
+            {
+                new Course("Course1", 1, "Test Category", true, 83,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course2", 2, "Test Category", true, 96,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course3", 3, "Test Category", true, 42,
+                    true, "", "Lecturer", System.DateTime.Today),
+                course4,
+                course3Retake1
+            };
+
+            Course[] courses2 = new Course[]
+            {
+                new Course("Course1", 1, "Test Category", true, 83,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course2", 2, "Test Category", true, 96,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course3", 3, "Test Category", true, 42,
+                    true, "", "Lecturer", System.DateTime.Today),
+                course3Retake2,
+                course5
+            };
+
+
+            Term term1 = new Term(2018, 1);
+            foreach (Course c in courses1)
+            {
+                term1.AddCourse(c);
+            }
+
+            Term term2 = new Term(2018, 1);
+            foreach (Course c in courses2)
+            {
+                term2.AddCourse(c);
+            }
+
+            var diffResult = Term.Diff(term1, term2);
+            List<CourseDiffInfo> expDiffResult = new List<CourseDiffInfo>()
+            {
+                new CourseDiffInfo(CourseDiffInfo.DiffType.Add, course3Retake2),
+                new CourseDiffInfo(CourseDiffInfo.DiffType.Remove, course3Retake1),
+                new CourseDiffInfo(CourseDiffInfo.DiffType.Add, course5),
+                new CourseDiffInfo(CourseDiffInfo.DiffType.Remove, course4)
+            };
+
+            Assert.AreEqual(expDiffResult.Count, diffResult.Count);
+            foreach(var i in expDiffResult)
+            {
+                Assert.AreEqual(true, diffResult.Any(x => x.Type == i.Type && x.Course == i.Course));
+            }
         }
     }
 

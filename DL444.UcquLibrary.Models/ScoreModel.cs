@@ -82,8 +82,40 @@ namespace DL444.UcquLibrary.Models
 
         public override string ToString()
         {
-            if(Id == null || Name == null) { return ""; }
+            if (Id == null || Name == null) { return ""; }
             return $"{Id} {Name} " + (IsMajor ? "主修" : "辅修");
+        }
+
+        public static bool operator ==(Score lhs, Score rhs)
+        {
+            if (ReferenceEquals(lhs, null) ^ ReferenceEquals(rhs, null))
+            {
+                return false;
+            }
+            else if (ReferenceEquals(lhs, null))
+            {
+                return true;
+            }
+            else
+            {
+                if (lhs.Terms.Count == rhs.Terms.Count && lhs.Id == rhs.Id && lhs.GPA == rhs.GPA)
+                {
+                    var lhsTerms = new List<Term>(lhs.Terms);
+                    var rhsTerms = new List<Term>(rhs.Terms);
+                    lhsTerms.Sort();
+                    rhsTerms.Sort();
+                    for (int i = 0; i < lhsTerms.Count; i++)
+                    {
+                        if (lhsTerms[i] != rhsTerms[i]) { return false; }
+                    }
+                    return true;
+                }
+                else { return false; }
+            }
+        }
+        public static bool operator !=(Score lhs, Score rhs)
+        {
+            return !(lhs == rhs);
         }
     }
 
@@ -153,6 +185,73 @@ namespace DL444.UcquLibrary.Models
                 return this.BeginningYear - other.BeginningYear;
             }
         }
+
+        public static bool operator == (Term lhs, Term rhs)
+        {
+            if (ReferenceEquals(lhs, null) ^ ReferenceEquals(rhs, null))
+            {
+                return false;
+            }
+            else if (ReferenceEquals(lhs, null))
+            {
+                return true;
+            }
+            else
+            {
+                if(lhs.Courses.Count == rhs.Courses.Count && lhs.BeginningYear == rhs.BeginningYear && lhs.TermNumber == rhs.TermNumber && lhs.GPA == rhs.GPA)
+                {
+                    var lhsCourses = new List<Course>(lhs.Courses);
+                    var rhsCourses = new List<Course>(rhs.Courses);
+                    lhsCourses.Sort();
+                    rhsCourses.Sort();
+                    for(int i = 0; i < lhsCourses.Count; i++)
+                    {
+                        if(lhsCourses[i] != rhsCourses[i]) { return false; }
+                    }
+                    return true;
+                }
+                else { return false; }
+            }
+        }
+
+        public static bool operator != (Term lhs, Term rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public static List<CourseDiffInfo> Diff(Term prev, Term current)
+        {
+            List<CourseDiffInfo> result = new List<CourseDiffInfo>();
+
+            Dictionary<string, Course> prevCourses = new Dictionary<string, Course>(prev.Courses.Count);
+            Dictionary<string, Course> currCourses = new Dictionary<string, Course>(current.Courses.Count);
+            foreach(Course c in prev.Courses)
+            {
+                prevCourses.Add(c.GetHashString(), c);
+            }
+            foreach (Course c in current.Courses)
+            {
+                currCourses.Add(c.GetHashString(), c);
+            }
+
+            foreach(var k in currCourses.Keys)
+            {
+                if(!prevCourses.ContainsKey(k))
+                {
+                    result.Add(new CourseDiffInfo(CourseDiffInfo.DiffType.Add, currCourses[k]));
+                }
+            }
+
+            foreach(var k in prevCourses.Keys)
+            {
+                if(!currCourses.ContainsKey(k))
+                {
+                    result.Add(new CourseDiffInfo(CourseDiffInfo.DiffType.Remove, prevCourses[k]));
+                }
+            }
+
+            return result;
+        }
     }
 
     public class Course
@@ -219,6 +318,64 @@ namespace DL444.UcquLibrary.Models
         public override string ToString()
         {
             return Name ?? "";
+        }
+
+        public static bool operator == (Course lhs, Course rhs)
+        {
+            if(ReferenceEquals(lhs, null) ^ ReferenceEquals(rhs, null))
+            {
+                return false;
+            }
+            else if (ReferenceEquals(lhs, null))
+            {
+                return true;
+            }
+            else
+            {
+                if(lhs.Name == rhs.Name && 
+                    lhs.Credit == rhs.Credit && 
+                    lhs.Category == rhs.Category &&
+                    lhs.IsInitialTake == rhs.IsInitialTake &&
+                    lhs.Score == rhs.Score &&
+                    lhs.IsMajor == rhs.IsMajor &&
+                    lhs.Comment == rhs.Comment &&
+                    lhs.Lecturer == rhs.Lecturer &&
+                    lhs.ObtainedTime == rhs.ObtainedTime)
+                {
+                    return true;
+                }
+                else { return false; }
+            }
+        }
+        public static bool operator != (Course lhs, Course rhs)
+        {
+            return !(lhs == rhs);
+        }
+    }
+
+    public class CourseDiffInfo
+    {
+        public DiffType Type { get; set; }
+        public Course Course { get; set; }
+
+        public enum DiffType
+        {
+            Add = 0, 
+            Remove = 1,
+        }
+
+        public CourseDiffInfo(DiffType type, Course course)
+        {
+            Type = type;
+            Course = course;
+        }
+    }
+
+    static class CourseHashExtension
+    {
+        internal static string GetHashString(this Course course)
+        {
+            return $"{course.Name}{course.Credit}{course.Category}{course.IsInitialTake}{course.Score}{course.IsMajor}{course.Comment}{course.Lecturer}";
         }
     }
 }
