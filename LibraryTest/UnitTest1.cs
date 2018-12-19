@@ -474,6 +474,65 @@ namespace LibraryTest
                 Assert.AreEqual(true, diffResult.Any(x => x.Type == i.Type && x.Course == i.Course));
             }
         }
+
+        [TestMethod]
+        public void Test_Compare()
+        {
+            Course[] courses1 = new Course[]
+{
+                new Course("Course", 1, "Test Category", true, 83,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 2, "Test Category", true, 96,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 3, "Test Category", true, 42,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 4, "Test Category", true, 67,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 3, "Test Category", true, 72,
+                    true, "补考", "Lecturer", System.DateTime.Today)
+};
+            // 2.11
+
+            Term term1 = new Term(2017, 3);
+            foreach (Course c in courses1)
+            {
+                term1.AddCourse(c);
+            }
+
+            Course[] courses2 = new Course[]
+            {
+                new Course("Course", 2, "Test Category", true, 83,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 3, "Test Category", true, 96,
+                    true, "", "Lecturer", System.DateTime.Today),
+                new Course("Course", 1, "Test Category", true, 42,
+                    true, "", "Lecturer", System.DateTime.Today),
+            };
+            // 3.72
+
+            Term term2 = new Term(2018, 1);
+            foreach (Course c in courses2)
+            {
+                term2.AddCourse(c);
+            }
+
+            Score score = new Score("20444444", "DL444", 2044, "SE", "SE01", true);
+            score.AddTerm(term1);
+
+            Course[] courses3 = new Course[] { courses1[0], courses1[1], courses1[3], courses1[4] };
+            Term term3 = new Term(2017, 3);
+            foreach (Course c in courses3)
+            {
+                term3.AddCourse(c);
+            }
+
+            Score score2 = new Score("20444444", "DL444", 2044, "SE", "SE01", true);
+            score2.AddTerm(term3);
+            score2.AddTerm(term2);
+
+            Assert.AreEqual(false, score == score2);
+            Assert.AreEqual(true, score == score);
+        }
     }
 
     [TestClass]

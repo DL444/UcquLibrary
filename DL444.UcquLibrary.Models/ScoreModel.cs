@@ -278,7 +278,7 @@ namespace DL444.UcquLibrary.Models
         }
     }
 
-    public class Course
+    public class Course : IComparable<Course>
     {
         public string Name { get; set; }
         public string SimplifiedName
@@ -342,6 +342,11 @@ namespace DL444.UcquLibrary.Models
         public override string ToString()
         {
             return Name ?? "";
+        }
+
+        public int CompareTo(Course other)
+        {
+            return this.Name.CompareTo(other.Name);
         }
 
         public static bool operator == (Course lhs, Course rhs)
