@@ -86,6 +86,30 @@ namespace DL444.UcquLibrary.Models
             return $"{Id} {Name} " + (IsMajor ? "主修" : "辅修");
         }
 
+        public static List<CourseDiffInfo> Diff(Score prev, Score current)
+        {
+            List<CourseDiffInfo> result = new List<CourseDiffInfo>();
+
+            List<Term> prevTerms = new List<Term>(prev.Terms);
+            List<Term> currTerms = new List<Term>(current.Terms);
+            prevTerms.Sort();
+            currTerms.Sort();
+
+            for(int i = 0; i < prevTerms.Count; i++)
+            {
+                result.AddRange(Term.Diff(prevTerms[i], currTerms[i]));
+            }
+            for(int i = prevTerms.Count; i < currTerms.Count; i++)
+            {
+                foreach(Course c in currTerms[i].Courses)
+                {
+                    result.Add(new CourseDiffInfo(CourseDiffInfo.DiffType.Add, c));
+                }
+            }
+
+            return result;
+        }
+
         public static bool operator ==(Score lhs, Score rhs)
         {
             if (ReferenceEquals(lhs, null) ^ ReferenceEquals(rhs, null))
